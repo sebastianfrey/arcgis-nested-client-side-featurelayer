@@ -1,1 +1,0 @@
-import{ax as r}from"./index-Dgi-qfGm.js";async function s(a,t){const{data:e}=await r(a,{responseType:"json",query:{f:"json",...t==null?void 0:t.customParameters,token:t==null?void 0:t.apiKey}});return e}export{s as t};
