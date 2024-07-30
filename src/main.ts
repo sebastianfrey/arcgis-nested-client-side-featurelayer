@@ -7,7 +7,9 @@ import GroupLayer from "@arcgis/core/layers/GroupLayer";
 import FeatureLayer from "@arcgis/core/layers/FeatureLayer";
 import LayerList from "@arcgis/core/widgets/LayerList";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils";
-
+import Graphic from "@arcgis/core/Graphic";
+import { randomPolygon } from "@turf/random";
+import { geojsonToArcGIS } from "@terraformer/arcgis";
 import { setAssetPath } from "@esri/calcite-components/dist/components";
 
 import "@esri/calcite-components/dist/components/calcite-shell";
@@ -44,6 +46,12 @@ const layerList = new LayerList({
   container: document.getElementById("layers-container")!,
 });
 
+function getRandomInt(min: number, max: number) {
+  const minCeiled = Math.ceil(min);
+  const maxFloored = Math.floor(max);
+  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
+}
+
 const createGroupLayerWithFeatureLayers = (
   title: string,
   childLayers: string[]
@@ -52,8 +60,28 @@ const createGroupLayerWithFeatureLayers = (
     title,
   });
   const sublayers = childLayers.map((title) => {
+    const featureCount = getRandomInt(0, 25);
+    let graphics: any[] = [];
+    if (featureCount > 5) {
+      const featureSet = randomPolygon(featureCount, {
+        num_vertices: 5,
+        max_radial_length: 10,
+      });
+      console.info(featureSet);
+      graphics = featureSet.features.map((feature: any, idx) => {
+        const geometry = geojsonToArcGIS(feature.geometry);
+        return Graphic.fromJSON({
+          geometry,
+          attributes: {
+            ID: idx + 1,
+            ...feature.properties,
+          },
+        });
+      });
+    }
+
     return new FeatureLayer({
-      source: [],
+      source: graphics,
       title,
       objectIdField: "ID",
       spatialReference: view.spatialReference,
@@ -99,7 +127,6 @@ const createWindFarmLayers = () => {
     "Permanente Inanspruchnahme",
     "Temporäre Inanspruchname",
   ]);
-
   const accessLayer = createGroupLayerWithFeatureLayers("Zuwegung", [
     "Mittellinie Zuwegung",
     "Schutzstreifen",
@@ -139,7 +166,15 @@ const updateVariants = (rootLayer: GroupLayer, groupCount: number) => {
     rootLayer.add(variantLayer);
   }
 
-  document.getElementById("layer-count")!.innerHTML = `Number of layers ${rootLayer.allLayers.length}`;
+  document.getElementById(
+    "layer-count"
+  )!.innerHTML = `Number of layers: ${rootLayer.allLayers.length}`;
+  document.getElementById("feature-count")!.innerHTML = `Number of features: ${
+    rootLayer.allLayers
+      .toArray()
+      .filter((l: any) => l.type === "feature")
+      .flatMap((l: any) => l.source.toArray()).length
+  }`;
 };
 
 let activeWidget: any = null;
