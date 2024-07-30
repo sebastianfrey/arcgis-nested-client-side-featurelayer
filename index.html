@@ -7,7 +7,33 @@
     <title>ArcGIS JS API - Vite + TS</title>
   </head>
   <body>
-    <div id="viewDiv"></div>
+    <calcite-shell content-behind>
+      <calcite-navigation slot="header">
+        <calcite-navigation-logo id="header-title" heading-level="1" slot="logo">
+          More than 200 nested client-side FeatureLayers cause significant frame drops
+        </calcite-navigation-logo>
+      </calcite-navigation>
+
+      <calcite-shell-panel slot="panel-start" display-mode="float">
+        <calcite-action-bar slot="action-bar">
+          <calcite-action data-action-id="layers" icon="layers" text="Layers"></calcite-action>
+        </calcite-action-bar>
+
+        <calcite-panel heading="Layers" height-scale="l" data-panel-id="layers">
+          <calcite-label style="padding: 10px" >
+            Number of Variants
+            <calcite-slider style="padding: 10px" value="2" label-handles label-ticks max-label="10" min-label="1" min="1" max="10"></calcite-slider>
+            <span id="layer-count">
+              Number of layers: 0
+            </span>
+          </calcite-label>
+          <div id="layers-container"></div>
+        </calcite-panel>
+      </calcite-shell-panel>
+
+      <div id="viewDiv"></div>
+    </calcite-shell>
+
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
