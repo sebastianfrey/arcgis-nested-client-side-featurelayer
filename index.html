@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ArcGIS JS API - Vite + TS</title>
+    <script type="module" crossorigin src="/assets/index-Dgi-qfGm.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-C3lbDvih.css">
+  </head>
+  <body>
+    <calcite-shell content-behind>
+      <calcite-navigation slot="header">
+        <calcite-navigation-logo id="header-title" heading-level="1" slot="logo">
+          More than 200 nested client-side FeatureLayers cause significant frame drops
+        </calcite-navigation-logo>
+      </calcite-navigation>
+
+      <calcite-shell-panel slot="panel-start" display-mode="float">
+        <calcite-action-bar slot="action-bar">
+          <calcite-action data-action-id="layers" icon="layers" text="Layers"></calcite-action>
+        </calcite-action-bar>
+
+        <calcite-panel heading="Layers" height-scale="l" data-panel-id="layers">
+          <calcite-label style="padding: 10px" >
+            Number of Variants
+            <calcite-slider style="padding: 10px" value="2" label-handles label-ticks max-label="25" min-label="1" min="1" max="25"></calcite-slider>
+            <span id="layer-count">
+              Number of layers: 0
+            </span>
+            <span id="feature-count">
+              Number of features: 0
+            </span>
+          </calcite-label>
+          <div id="layers-container"></div>
+        </calcite-panel>
+      </calcite-shell-panel>
+
+      <div id="viewDiv"></div>
+    </calcite-shell>
+
+  </body>
+</html>
