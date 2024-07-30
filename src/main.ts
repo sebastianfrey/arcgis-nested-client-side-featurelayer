@@ -67,7 +67,6 @@ const createGroupLayerWithFeatureLayers = (
         num_vertices: 5,
         max_radial_length: 10,
       });
-      console.info(featureSet);
       graphics = featureSet.features.map((feature: any, idx) => {
         const geometry = geojsonToArcGIS(feature.geometry);
         return Graphic.fromJSON({
