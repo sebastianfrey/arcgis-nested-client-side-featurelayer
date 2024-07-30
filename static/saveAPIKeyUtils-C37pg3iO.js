@@ -1,1 +1,0 @@
-import{ay as o,bc as p,e}from"./index-DtvgboMu.js";function s(a){if(o.apiKey&&p(a.portal.url))throw new e("save-api-key-utils:api-key-not-supported",`Saving is not supported on ${a.portal.url} when using an api key`)}export{s as i};

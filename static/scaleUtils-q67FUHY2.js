@@ -1,1 +1,0 @@
-import{bW as o,bX as u,bY as c}from"./index-DtvgboMu.js";const e=96;function p(n,t){const r=n.extent,i=n.width,a=o(r==null?void 0:r.spatialReference);return r&&i?r.width/i*a*u*e:0}function b(n,t){return n/(o(t)*u*e)}function h(n,t,r){return f(n,t)&&s(n,r)}function f(n,t){return t===0||c(n,t)||n<t}function s(n,t){return t===0||c(n,t)||n>t}export{h as d,p as i,b as o};
