@@ -5,7 +5,7 @@
     <link rel="icon" type="image/svg+xml" href="./vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>ArcGIS JS API - Vite + TS</title>
-    <script type="module" crossorigin src="./static/index-BwifKPSf.js"></script>
+    <script type="module" crossorigin src="./static/index-HVMkvd8u.js"></script>
     <link rel="stylesheet" crossorigin href="./static/index-CiswRgqD.css">
   </head>
   <body>
@@ -23,11 +23,23 @@
 
         <calcite-panel heading="Layers" height-scale="l" data-panel-id="layers">
           <calcite-label style="padding: 10px" >
-            Number of Variants
-            <calcite-slider style="padding: 10px" value="2" label-handles label-ticks max-label="25" min-label="1" min="1" max="25"></calcite-slider>
+            Number of nested Groups
+            <calcite-slider id="groups-slider" style="padding: 10px" value="10" label-handles label-ticks max-label="20" min-label="1" min="1" max="20"></calcite-slider>
+          </calcite-label>
+          <calcite-label style="padding: 10px" >
+            Number of nested Subgroups
+            <calcite-slider id="subgroups-slider" style="padding: 10px" value="5" label-handles label-ticks max-label="10" min-label="1" min="1" max="10"></calcite-slider>
+          </calcite-label>
+          <calcite-label style="padding: 10px" >
+            Number of nested FeatureLayers
+            <calcite-slider id="featurelayers-slider" style="padding: 10px" value="5" label-handles label-ticks max-label="10" min-label="1" min="1" max="10"></calcite-slider>
             <span id="layer-count">
-              Number of layers: 0
+              Number of total layers: 0
             </span>
+          </calcite-label>
+          <calcite-label style="padding: 10px">
+            Number of Features per FeatureLayer
+            <calcite-slider id="features-slider" style="padding: 10px" value="10" label-handles label-ticks max-label="200" min-label="1" min="1" max="200"></calcite-slider>
             <span id="feature-count">
               Number of features: 0
             </span>
