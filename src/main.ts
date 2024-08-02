@@ -46,42 +46,35 @@ const layerList = new LayerList({
   container: document.getElementById("layers-container")!,
 });
 
-function getRandomInt(min: number, max: number) {
-  const minCeiled = Math.ceil(min);
-  const maxFloored = Math.floor(max);
-  return Math.floor(Math.random() * (maxFloored - minCeiled) + minCeiled); // The maximum is exclusive and the minimum is inclusive
-}
-
-const createGroupLayerWithFeatureLayers = (
+const createSubgroupLayerWithFeatureLayers = (
   title: string,
-  childLayers: string[]
+  featureLayerCount: number,
+  featureCount: number
 ) => {
-  const groupLayer = new GroupLayer({
+  const subgroupLayer = new GroupLayer({
     title,
   });
-  const sublayers = childLayers.map((title) => {
-    const featureCount = getRandomInt(0, 25);
-    let graphics: any[] = [];
-    if (featureCount > 5) {
-      const featureSet = randomPolygon(featureCount, {
-        num_vertices: 5,
-        max_radial_length: 10,
+  const sublayers: FeatureLayer[] = [];
+  for (let i = 0; i < featureLayerCount; i++) {
+    const featureSet = randomPolygon(featureCount, {
+      num_vertices: 4,
+      max_radial_length: 0.5,
+      bbox: [5.98865807458, 47.3024876979, 15.0169958839, 54.983104153],
+    });
+    const graphics = featureSet.features.map((feature: any, idx) => {
+      const geometry = geojsonToArcGIS(feature.geometry);
+      return Graphic.fromJSON({
+        geometry,
+        attributes: {
+          ID: idx + 1,
+          ...feature.properties,
+        },
       });
-      graphics = featureSet.features.map((feature: any, idx) => {
-        const geometry = geojsonToArcGIS(feature.geometry);
-        return Graphic.fromJSON({
-          geometry,
-          attributes: {
-            ID: idx + 1,
-            ...feature.properties,
-          },
-        });
-      });
-    }
+    });
 
-    return new FeatureLayer({
+    const featureLayer = new FeatureLayer({
       source: graphics,
-      title,
+      title: `Feature Layer ${i + 1}`,
       objectIdField: "ID",
       spatialReference: view.spatialReference,
       geometryType: "polygon",
@@ -93,56 +86,29 @@ const createGroupLayerWithFeatureLayers = (
         },
       ],
     });
-  });
-  groupLayer.addMany(sublayers);
-  return groupLayer;
+    sublayers.push(featureLayer);
+  }
+
+  subgroupLayer.addMany(sublayers.reverse());
+  return subgroupLayer;
 };
 
-const createWindFarmLayers = () => {
-  const wtgLayer = createGroupLayerWithFeatureLayers("WTG", [
-    "WEA-Position",
-    "Umfahrung",
-    "Fundament",
-    "Fundamentschutz",
-    "Permanente Inanspruchnahme",
-    "Temporäre Inanspruchname",
-    "Kranstellfläche",
-    "Kranauslegerfläche",
-    "Lagerflächen",
-    "Böschungsring",
-    "Rotorüberstreichfläche",
-    "Reduzierte Abstandsfläche",
-    "Abstandsfläche",
-    "Turbulenzellipse (techn. Abstand)",
-    "Turbulenzkreis 2.5 D",
-    "Turbulenzkreis 3 D",
-    "Turbulenzkreis 3.5 D",
-  ]);
-  const wtsLayer = createGroupLayerWithFeatureLayers("WTS", [
-    "WEA-Position",
-    "Umfahrung",
-    "Fundament",
-    "Fundamentschutz",
-    "Permanente Inanspruchnahme",
-    "Temporäre Inanspruchname",
-  ]);
-  const accessLayer = createGroupLayerWithFeatureLayers("Zuwegung", [
-    "Mittellinie Zuwegung",
-    "Schutzstreifen",
-    "Serviceweg",
-    "Überstreichfläche (Schleppkurve)",
-    "Permanente Zuwegung",
-    "Temporäre Zuwegung",
-  ]);
-  const claimLayer = createGroupLayerWithFeatureLayers("Inanspruchnahme", [
-    "Permanente Inanspruchnahme",
-    "Temporäre Inanspruchname",
-    "Inanspruchnahme",
-  ]);
-
-  const cableLayer = createGroupLayerWithFeatureLayers("Kabel", ["Kabel"]);
-
-  return [wtgLayer, wtsLayer, accessLayer, claimLayer, cableLayer];
+const createNestedLayers = (
+  subgroupCount: number,
+  featureLayerCount: number,
+  featuresCount: number
+) => {
+  const groups: GroupLayer[] = [];
+  for (let i = 0; i < subgroupCount; i++) {
+    groups.push(
+      createSubgroupLayerWithFeatureLayers(
+        `Subgroup ${i + 1}`,
+        featureLayerCount,
+        featuresCount
+      )
+    );
+  }
+  return groups.reverse();
 };
 
 const addProjectToMap = (title: string) => {
@@ -155,15 +121,25 @@ const addProjectToMap = (title: string) => {
   return rootLayer;
 };
 
-const updateVariants = (rootLayer: GroupLayer, groupCount: number) => {
+const updateGroups = (
+  rootLayer: GroupLayer,
+  groupCount: number,
+  subgroupCount: number,
+  featureLayerCount: number,
+  featuresCount: number
+) => {
   rootLayer.removeAll();
+  const groupLayers: GroupLayer[] = [];
   for (let i = 0; i < groupCount; i++) {
-    const variantLayer = new GroupLayer({
-      title: `Variant ${i + 1}`,
+    const groupLayer = new GroupLayer({
+      title: `Group ${i + 1}`,
     });
-    variantLayer.addMany(createWindFarmLayers());
-    rootLayer.add(variantLayer);
+    groupLayers.push(groupLayer);
+    groupLayer.addMany(
+      createNestedLayers(subgroupCount, featureLayerCount, featuresCount)
+    );
   }
+  rootLayer.addMany(groupLayers.reverse());
 
   document.getElementById(
     "layer-count"
@@ -175,6 +151,7 @@ const updateVariants = (rootLayer: GroupLayer, groupCount: number) => {
       .flatMap((l: any) => l.source.toArray()).length
   }`;
 };
+
 
 let activeWidget: any = null;
 
@@ -225,11 +202,43 @@ view.when(() => {
 
   const rootLayer = addProjectToMap("Root Group");
 
-  const variantsSlider = document.querySelector("calcite-slider")!;
-  variantsSlider!.addEventListener("calciteSliderChange", () => {
-    updateVariants(rootLayer, variantsSlider!.value as number);
-  });
-  updateVariants(rootLayer, variantsSlider!.value as number);
+  const groupsSlider = document.getElementById(
+    "groups-slider"
+  )! as HTMLCalciteSliderElement;
+  const subgroupSlider = document.getElementById(
+    "subgroups-slider"
+  )! as HTMLCalciteSliderElement;
+  const featureLayerSlider = document.getElementById(
+    "featurelayers-slider"
+  )! as HTMLCalciteSliderElement;
+  const featuresSlider = document.getElementById(
+    "features-slider"
+  )! as HTMLCalciteSliderElement;
+
+  for (const slider of [
+    groupsSlider,
+    subgroupSlider,
+    featureLayerSlider,
+    featuresSlider,
+  ]) {
+    slider.addEventListener("calciteSliderChange", () => {
+      updateGroups(
+        rootLayer,
+        groupsSlider!.value as number,
+        subgroupSlider!.value as number,
+        featureLayerSlider!.value as number,
+        featuresSlider!.value as number
+      );
+    });
+  }
+
+  updateGroups(
+    rootLayer,
+    groupsSlider!.value as number,
+    subgroupSlider!.value as number,
+    featureLayerSlider!.value as number,
+    featuresSlider!.value as number
+  );
 
   view.whenLayerView(rootLayer).then(() => {
     reactiveUtils
